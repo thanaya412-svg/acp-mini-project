@@ -19,20 +19,19 @@ void clearPicture()
 /* Display the canvas */
 void displayPicture()
 {
-    for (int y = 0; y < HEIGHT; y++)
+ for (int y = 0; y < HEIGHT; y++)
+ {
+      for (int x = 0; x < WIDTH; x++)
     {
-        for (int x = 0; x < WIDTH; x++)
-        {
-            printf("%c", picture[y][x]);
-        }
+          printf("%c", picture[y][x]);
+    }
         printf("\n");
     }
 }
 
 int main()
 {
-    printf("Canvas created successfully!\n");
-    printf("Canvas size: %d x %d\n", WIDTH, HEIGHT);
-
-    return 0;
+     printf("Canvas created successfully!\n");
+     printf("Canvas size: %d x %d\n", WIDTH, HEIGHT);
+     return 0;
 }
