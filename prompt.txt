@@ -179,3 +179,222 @@ int main() {
 
     return 0;
 }
+
+give this in parts to push in git hub
+1. shapes.h
+#ifndef SHAPES_H
+#define SHAPES_H
+
+#define WIDTH 80
+#define HEIGHT 24
+#define EMPTY '_'
+#define PIXEL '*'
+
+typedef enum { LINE, RECTANGLE, CIRCLE, TRIANGLE } ShapeType;
+
+typedef struct {
+    ShapeType type;
+    int params[6];
+} Shape;
+
+extern Shape objects[100];
+extern int objectCount;
+extern char picture[HEIGHT][WIDTH];
+
+void clearPicture();
+void setPixel(int x, int y);
+void drawLine(int x1, int y1, int x2, int y2);
+void drawRectangle(int x1, int y1, int x2, int y2);
+void drawCircle(int cx, int cy, int r);
+void drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
+void renderObjects();
+void displayPicture();
+
+void addObject(Shape s);
+void deleteObject(int index);
+void modifyObject(int index, Shape newShape);
+
+#endif
+2. canvas.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "shapes.h"
+
+char picture[HEIGHT][WIDTH];
+
+void clearPicture() {
+    for (int y = 0; y < HEIGHT; y++)
+        for (int x = 0; x < WIDTH; x++)
+            picture[y][x] = EMPTY;
+}
+
+void setPixel(int x, int y) {
+    if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
+        picture[y][x] = PIXEL;
+}
+
+void drawLine(int x1, int y1, int x2, int y2) {
+    int dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
+    int dy = -abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
+    int err = dx + dy, e2;
+
+    while (1) {
+        setPixel(x1, y1);
+        if (x1 == x2 && y1 == y2) break;
+
+        e2 = 2 * err;
+        if (e2 >= dy) {
+            err += dy;
+            x1 += sx;
+        }
+        if (e2 <= dx) {
+            err += dx;
+            y1 += sy;
+        }
+    }
+}
+
+void drawRectangle(int x1, int y1, int x2, int y2) {
+    for (int x = x1; x <= x2; x++) {
+        setPixel(x, y1);
+        setPixel(x, y2);
+    }
+
+    for (int y = y1; y <= y2; y++) {
+        setPixel(x1, y);
+        setPixel(x2, y);
+    }
+}
+
+void drawCircle(int cx, int cy, int r) {
+    int x = r, y = 0, err = 0;
+
+    while (x >= y) {
+        setPixel(cx + x, cy + y);
+        setPixel(cx + y, cy + x);
+        setPixel(cx - y, cy + x);
+        setPixel(cx - x, cy + y);
+        setPixel(cx - x, cy - y);
+        setPixel(cx - y, cy - x);
+        setPixel(cx + y, cy - x);
+        setPixel(cx + x, cy - y);
+
+        y++;
+
+        if (err <= 0)
+            err += 2 * y + 1;
+        else {
+            x--;
+            err -= 2 * x + 1;
+        }
+    }
+}
+
+void drawTriangle(int x1, int y1, int x2, int y2,
+                  int x3, int y3) {
+    drawLine(x1, y1, x2, y2);
+    drawLine(x2, y2, x3, y3);
+    drawLine(x3, y3, x1, y1);
+}
+3. objects.c
+#include "shapes.h"
+
+Shape objects[100];
+int objectCount = 0;
+
+void addObject(Shape s) {
+    if (objectCount < 100)
+        objects[objectCount++] = s;
+}
+
+void deleteObject(int index) {
+    if (index >= 0 && index < objectCount) {
+        for (int i = index; i < objectCount - 1; i++)
+            objects[i] = objects[i + 1];
+
+        objectCount--;
+    }
+}
+
+void modifyObject(int index, Shape newShape) {
+    if (index >= 0 && index < objectCount)
+        objects[index] = newShape;
+}
+4. render.c
+#include <stdio.h>
+#include "shapes.h"
+
+void renderObjects() {
+    clearPicture();
+
+    for (int i = 0; i < objectCount; i++) {
+        Shape s = objects[i];
+
+        if (s.type == LINE)
+            drawLine(s.params[0], s.params[1],
+                     s.params[2], s.params[3]);
+
+        else if (s.type == RECTANGLE)
+            drawRectangle(s.params[0], s.params[1],
+                          s.params[2], s.params[3]);
+
+        else if (s.type == CIRCLE)
+            drawCircle(s.params[0], s.params[1],
+                       s.params[2]);
+
+        else if (s.type == TRIANGLE)
+            drawTriangle(s.params[0], s.params[1],
+                         s.params[2], s.params[3],
+                         s.params[4], s.params[5]);
+    }
+}
+
+void displayPicture() {
+    renderObjects();
+
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++)
+            printf("%c", picture[y][x]);
+
+        printf("\n");
+    }
+}
+5. main.c
+#include <stdio.h>
+#include "shapes.h"
+
+int main() {
+    int choice;
+
+    while (1) {
+        printf("\nMenu\n");
+        printf("1. Add Line\n");
+        printf("2. Add Rectangle\n");
+        printf("3. Add Circle\n");
+        printf("4. Add Triangle\n");
+        printf("5. Display Picture\n");
+        printf("6. Delete Object\n");
+        printf("7. Modify Object\n");
+        printf("0. Exit\n");
+
+        scanf("%d", &choice);
+
+        if (choice == 0)
+            break;
+
+        /* Add your menu handling code here
+           from the original program */
+    }
+
+    return 0;
+}
+Folder Structure
+ASCII-Drawing-App/
+│
+├── main.c
+├── canvas.c
+├── objects.c
+├── render.c
+├── shapes.h
+└── README.md
